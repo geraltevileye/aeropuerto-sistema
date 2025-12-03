@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard del Sistema</h1>
+<p class="text-muted">Bienvenido, {{ current_user.nombre_completo }}</p>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="stat-card card-vuelos">
+            <h3><i class="bi bi-airplane"></i> {{ stats.total_vuelos }}</h3>
+            <p>Vuelos Totales</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card card-reservas">
+            <h3><i class="bi bi-ticket-perforated"></i> {{ stats.reservas_activas }}</h3>
+            <p>Reservas Activas</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card card-aerolineas">
+            <h3><i class="bi bi-building"></i> {{ stats.aerolineas_activas }}</h3>
+            <p>Aerolíneas Activas</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                {% if current_user.rol in ['admin', 'responsable'] %}
+                <a href="{{ url_for('crear_vuelo') }}" class="btn btn-primary me-2">
+                    <i class="bi bi-plus-circle"></i> Nuevo Vuelo
+                </a>
+                <a href="{{ url_for('crear_aeropuerto') }}" class="btn btn-success me-2">
+                    <i class="bi bi-building-add"></i> Nuevo Aeropuerto
+                </a>
+                {% endif %}
+                <a href="{{ url_for('vuelos') }}" class="btn btn-info">
+                    <i class="bi bi-list"></i> Ver Todos los Vuelos
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Tu Rol: {{ current_user.rol|title }}</h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    {% if current_user.rol == 'admin' %}
+                        Tienes acceso completo al sistema, incluyendo gestión de usuarios y logs.
+                    {% elif current_user.rol == 'responsable' %}
+                        Puedes crear, modificar y eliminar registros, pero no gestionar usuarios.
+                    {% else %}
+                        Solo puedes consultar información del sistema.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
