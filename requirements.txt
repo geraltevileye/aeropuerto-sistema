@@ -4,3 +4,5 @@ Flask-Login==0.6.2
 gunicorn==20.1.0
 pandas==2.0.3
 python-dotenv==1.0.0
+# En requirements.txt asegúrate de tener:
+psycopg2-binary==2.9.9
