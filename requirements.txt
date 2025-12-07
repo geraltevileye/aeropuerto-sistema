@@ -2,7 +2,6 @@ Flask==2.3.3
 mysql-connector-python==8.1.0
 Flask-Login==0.6.2
 gunicorn==20.1.0
-pandas==2.0.3
+pandas>=2.1.0,<2.3.0  # Updated for Python 3.13 compatibility
 python-dotenv==1.0.0
-# En requirements.txt asegúrate de tener:
 psycopg2-binary==2.9.9
