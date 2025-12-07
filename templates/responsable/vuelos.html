@@ -1,0 +1,263 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Gestionar Vuelos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-airplane"></i> Gestión de Vuelos</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#agregarVueloModal">
+        <i class="bi bi-plus-circle"></i> Nuevo Vuelo
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <select name="estado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="Programado" {% if request.args.get('estado') == 'Programado' %}selected{% endif %}>Programado</option>
+                    <option value="Abordando" {% if request.args.get('estado') == 'Abordando' %}selected{% endif %}>Abordando</option>
+                    <option value="Despegado" {% if request.args.get('estado') == 'Despegado' %}selected{% endif %}>Despegado</option>
+                    <option value="Aterrizado" {% if request.args.get('estado') == 'Aterrizado' %}selected{% endif %}>Aterrizado</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="fecha" class="form-control" value="{{ request.args.get('fecha', '') }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="origen" class="form-control" placeholder="Origen" value="{{ request.args.get('origen', '') }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="destino" class="form-control" placeholder="Destino" value="{{ request.args.get('destino', '') }}">
+            </div>
+            <div class="col-md-12 mt-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+                <a href="{{ url_for('responsable_vuelos') }}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de vuelos -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Vuelo</th>
+                        <th>Aerolínea</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Salida</th>
+                        <th>Llegada</th>
+                        <th>Estado</th>
+                        <th>Puerta</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vuelo in vuelos %}
+                    <tr>
+                        <td><strong>{{ vuelo.id_vuelo }}</strong></td>
+                        <td>{{ vuelo.aerolinea_nombre or 'N/A' }}</td>
+                        <td>{{ vuelo.origen }}</td>
+                        <td>{{ vuelo.destino }}</td>
+                        <td>{{ vuelo.fecha_salida.strftime('%Y-%m-%d %H:%M') if vuelo.fecha_salida else 'N/A' }}</td>
+                        <td>{{ vuelo.fecha_llegada.strftime('%Y-%m-%d %H:%M') if vuelo.fecha_llegada else 'N/A' }}</td>
+                        <td>
+                            {% if vuelo.estado == 'Programado' %}
+                            <span class="badge bg-primary">{{ vuelo.estado }}</span>
+                            {% elif vuelo.estado == 'Abordando' %}
+                            <span class="badge bg-warning">{{ vuelo.estado }}</span>
+                            {% elif vuelo.estado == 'Despegado' %}
+                            <span class="badge bg-info">{{ vuelo.estado }}</span>
+                            {% elif vuelo.estado == 'Aterrizado' %}
+                            <span class="badge bg-success">{{ vuelo.estado }}</span>
+                            {% elif vuelo.estado == 'Cancelado' %}
+                            <span class="badge bg-danger">{{ vuelo.estado }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ vuelo.estado or 'N/A' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ vuelo.puerta_embarque or 'N/A' }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarVueloModal{{ vuelo.id_vuelo }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            {% if session.rol == 'admin' %}
+                            <a href="{{ url_for('eliminar_vuelo', id=vuelo.id_vuelo) }}" 
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('¿Eliminar vuelo {{ vuelo.id_vuelo }}?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    
+                    <!-- Modal de edición para este vuelo -->
+                    <div class="modal fade" id="editarVueloModal{{ vuelo.id_vuelo }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Editar Vuelo {{ vuelo.id_vuelo }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('editar_vuelo', id=vuelo.id_vuelo) }}">
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Número de Vuelo:</label>
+                                                    <input type="text" name="id_vuelo" class="form-control" value="{{ vuelo.id_vuelo }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Aerolínea:</label>
+                                                    <select name="id_aerolinea" class="form-select" required>
+                                                        <option value="">Seleccionar aerolínea</option>
+                                                        {% for aero in aerolineas %}
+                                                        <option value="{{ aero.id_aerolinea }}" 
+                                                                {% if vuelo.id_aerolinea == aero.id_aerolinea %}selected{% endif %}>
+                                                            {{ aero.nombre }} ({{ aero.codigo_iata }})
+                                                        </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Origen:</label>
+                                                    <input type="text" name="origen" class="form-control" value="{{ vuelo.origen }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Destino:</label>
+                                                    <input type="text" name="destino" class="form-control" value="{{ vuelo.destino }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha/Hora Salida:</label>
+                                                    <input type="datetime-local" name="fecha_salida" class="form-control" 
+                                                           value="{{ vuelo.fecha_salida.strftime('%Y-%m-%dT%H:%M') if vuelo.fecha_salida else '' }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Fecha/Hora Llegada:</label>
+                                                    <input type="datetime-local" name="fecha_llegada" class="form-control" 
+                                                           value="{{ vuelo.fecha_llegada.strftime('%Y-%m-%dT%H:%M') if vuelo.fecha_llegada else '' }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Estado:</label>
+                                                    <select name="estado" class="form-select" required>
+                                                        <option value="Programado" {% if vuelo.estado == 'Programado' %}selected{% endif %}>Programado</option>
+                                                        <option value="Abordando" {% if vuelo.estado == 'Abordando' %}selected{% endif %}>Abordando</option>
+                                                        <option value="Despegado" {% if vuelo.estado == 'Despegado' %}selected{% endif %}>Despegado</option>
+                                                        <option value="Aterrizado" {% if vuelo.estado == 'Aterrizado' %}selected{% endif %}>Aterrizado</option>
+                                                        <option value="Cancelado" {% if vuelo.estado == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+                                                        <option value="Retrasado" {% if vuelo.estado == 'Retrasado' %}selected{% endif %}>Retrasado</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Puerta de Embarque:</label>
+                                                    <input type="text" name="puerta" class="form-control" value="{{ vuelo.puerta_embarque or '' }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if vuelos|length == 0 %}
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> No se encontraron vuelos
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para agregar nuevo vuelo -->
+<div class="modal fade" id="agregarVueloModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Nuevo Vuelo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('agregar_vuelo') }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Número de Vuelo:</label>
+                                <input type="text" name="id_vuelo" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Aerolínea:</label>
+                                <select name="id_aerolinea" class="form-select" required>
+                                    <option value="">Seleccionar aerolínea</option>
+                                    {% for aero in aerolineas %}
+                                    <option value="{{ aero.id_aerolinea }}">{{ aero.nombre }} ({{ aero.codigo_iata }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Origen:</label>
+                                <input type="text" name="origen" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Destino:</label>
+                                <input type="text" name="destino" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Fecha/Hora Salida:</label>
+                                <input type="datetime-local" name="fecha_salida" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Fecha/Hora Llegada:</label>
+                                <input type="datetime-local" name="fecha_llegada" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Estado:</label>
+                                <select name="estado" class="form-select" required>
+                                    <option value="Programado">Programado</option>
+                                    <option value="Abordando">Abordando</option>
+                                    <option value="Despegado">Despegado</option>
+                                    <option value="Aterrizado">Aterrizado</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                    <option value="Retrasado">Retrasado</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Puerta de Embarque:</label>
+                                <input type="text" name="puerta" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Vuelo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

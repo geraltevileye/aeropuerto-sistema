@@ -1,0 +1,89 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Logs del Sistema{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-journal-text"></i> Logs del Sistema</h2>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtrar Logs</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Fecha inicio:</label>
+                <input type="date" name="fecha_inicio" class="form-control" value="{{ request.args.get('fecha_inicio', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Fecha fin:</label>
+                <input type="date" name="fecha_fin" class="form-control" value="{{ request.args.get('fecha_fin', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Usuario:</label>
+                <input type="text" name="usuario" class="form-control" placeholder="Usuario" value="{{ request.args.get('usuario', '') }}">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de logs -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha/Hora</th>
+                        <th>Usuario</th>
+                        <th>Operación</th>
+                        <th>Tabla</th>
+                        <th>Registro</th>
+                        <th>Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.id_log }}</td>
+                        <td>{{ log.fecha_hora.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ log.username or 'N/A' }}</td>
+                        <td>
+                            {% if log.operacion == 'ALTA' %}
+                            <span class="badge bg-success">{{ log.operacion }}</span>
+                            {% elif log.operacion == 'BAJA' %}
+                            <span class="badge bg-danger">{{ log.operacion }}</span>
+                            {% elif log.operacion == 'EDICION' %}
+                            <span class="badge bg-warning">{{ log.operacion }}</span>
+                            {% elif log.operacion == 'LOGIN' %}
+                            <span class="badge bg-info">{{ log.operacion }}</span>
+                            {% elif log.operacion == 'LOGOUT' %}
+                            <span class="badge bg-secondary">{{ log.operacion }}</span>
+                            {% else %}
+                            <span class="badge bg-primary">{{ log.operacion }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.tabla_afectada or 'N/A' }}</td>
+                        <td>{{ log.id_registro_afectado or 'N/A' }}</td>
+                        <td><small>{{ log.detalles or 'N/A' }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if logs|length == 0 %}
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> No se encontraron logs
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

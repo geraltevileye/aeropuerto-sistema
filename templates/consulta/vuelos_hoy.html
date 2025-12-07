@@ -1,0 +1,111 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Vuelos de Hoy{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-calendar-check"></i> Vuelos Programados para Hoy</h2>
+
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> Mostrando vuelos con fecha de salida: {{ hoy }}
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-airplane"></i> Lista de Vuelos</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Vuelo</th>
+                        <th>Aerolínea</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Hora Salida</th>
+                        <th>Hora Llegada</th>
+                        <th>Estado</th>
+                        <th>Puerta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vuelo in vuelos %}
+                    <tr>
+                        <td><strong>{{ vuelo.id_vuelo }}</strong></td>
+                        <td>{{ vuelo.aerolinea_nombre or 'N/A' }}</td>
+                        <td>{{ vuelo.origen }}</td>
+                        <td>{{ vuelo.destino }}</td>
+                        <td>{{ vuelo.fecha_salida.strftime('%H:%M') if vuelo.fecha_salida else 'N/A' }}</td>
+                        <td>{{ vuelo.fecha_llegada.strftime('%H:%M') if vuelo.fecha_llegada else 'N/A' }}</td>
+                        <td>
+                            {% if vuelo.estado == 'Programado' %}
+                            <span class="badge bg-primary">{{ vuelo.estado }}</span>
+                            {% elif vuelo.estado == 'Abordando' %}
+                            <span class="badge bg-warning">{{ vuelo.estado }}</span>
+                            {% elif vuelo.estado == 'Despegado' %}
+                            <span class="badge bg-info">{{ vuelo.estado }}</span>
+                            {% elif vuelo.estado == 'Aterrizado' %}
+                            <span class="badge bg-success">{{ vuelo.estado }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ vuelo.estado or 'N/A' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ vuelo.puerta_embarque or 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if vuelos|length == 0 %}
+        <div class="alert alert-warning text-center">
+            <i class="bi bi-exclamation-triangle"></i> No hay vuelos programados para hoy
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h6><i class="bi bi-bar-chart"></i> Estadísticas</h6>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5>{{ vuelos|length }}</h5>
+                            <p>Total Vuelos</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5>{{ vuelos|selectattr('estado', 'equalto', 'Programado')|list|length }}</h5>
+                            <p>Programados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5>{{ vuelos|selectattr('estado', 'equalto', 'Abordando')|list|length }}</h5>
+                            <p>Abordando</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5>{{ vuelos|selectattr('estado', 'equalto', 'Despegado')|list|length }}</h5>
+                            <p>Despegados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

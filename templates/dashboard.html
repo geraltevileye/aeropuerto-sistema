@@ -1,0 +1,94 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Bienvenido, {{ username }}!</h5>
+            </div>
+            <div class="card-body">
+                <p>Rol: <span class="badge bg-{% if rol == 'admin' %}danger{% elif rol == 'responsable' %}warning{% else %}info{% endif %}">{{ rol }}</span></p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card text-white bg-info">
+                            <div class="card-body text-center">
+                                <h5><i class="bi bi-airplane"></i> Vuelos Hoy</h5>
+                                <h2>{{ vuelos_hoy }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white bg-success">
+                            <div class="card-body text-center">
+                                <h5><i class="bi bi-building"></i> Aerolíneas</h5>
+                                <h2>{{ total_aerolineas }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body text-center">
+                                <h5><i class="bi bi-people"></i> Pasajeros</h5>
+                                <h2>{{ total_pasajeros }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <h5>Accesos rápidos:</h5>
+                <div class="row">
+                    {% if rol == 'admin' %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin_aerolineas') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-building"></i> Aerolíneas
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin_pasajeros') }}" class="btn btn-success w-100">
+                            <i class="bi bi-people"></i> Pasajeros
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('admin_usuarios') }}" class="btn btn-info w-100">
+                            <i class="bi bi-person-badge"></i> Usuarios
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('ver_logs') }}" class="btn btn-secondary w-100">
+                            <i class="bi bi-journal-text"></i> Logs
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if rol in ['admin', 'responsable'] %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('responsable_vuelos') }}" class="btn btn-warning w-100">
+                            <i class="bi bi-airplane"></i> Vuelos
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('consulta_vuelos_hoy') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-calendar-check"></i> Vuelos Hoy
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('consulta_pasajeros') }}" class="btn btn-success w-100">
+                            <i class="bi bi-people"></i> Ver Pasajeros
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

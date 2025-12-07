@@ -1,0 +1,191 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Administrar Pasajeros{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-people"></i> Pasajeros</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#agregarModal">
+        <i class="bi bi-plus-circle"></i> Nuevo Pasajero
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-search"></i> Buscar Pasajeros</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <input type="text" name="nombre" class="form-control" placeholder="Nombre" value="{{ request.args.get('nombre', '') }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="apellido" class="form-control" placeholder="Apellido" value="{{ request.args.get('apellido', '') }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="pasaporte" class="form-control" placeholder="Pasaporte" value="{{ request.args.get('pasaporte', '') }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabla de pasajeros -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellidos</th>
+                        <th>Pasaporte</th>
+                        <th>Nacionalidad</th>
+                        <th>Fecha Nac.</th>
+                        <th>Contacto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pasajero in pasajeros %}
+                    <tr>
+                        <td>{{ pasajero.id_pasajero }}</td>
+                        <td>{{ pasajero.nombre }}</td>
+                        <td>{{ pasajero.apellidos }}</td>
+                        <td><code>{{ pasajero.pasaporte }}</code></td>
+                        <td>{{ pasajero.nacionalidad or 'N/A' }}</td>
+                        <td>{{ pasajero.fecha_nacimiento or 'N/A' }}</td>
+                        <td>
+                            {% if pasajero.correo %}
+                            <i class="bi bi-envelope"></i> {{ pasajero.correo }}<br>
+                            {% endif %}
+                            {% if pasajero.telefono %}
+                            <i class="bi bi-telephone"></i> {{ pasajero.telefono }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarModal{{ pasajero.id_pasajero }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <a href="{{ url_for('eliminar_pasajero', id=pasajero.id_pasajero) }}" 
+                               class="btn btn-sm btn-danger" 
+                               onclick="return confirm('¿Eliminar pasajero {{ pasajero.nombre }} {{ pasajero.apellidos }}?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <!-- Modal de edición para este pasajero -->
+                    <div class="modal fade" id="editarModal{{ pasajero.id_pasajero }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Editar Pasajero</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('editar_pasajero', id=pasajero.id_pasajero) }}">
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nombre:</label>
+                                            <input type="text" name="nombre" class="form-control" value="{{ pasajero.nombre }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Apellidos:</label>
+                                            <input type="text" name="apellidos" class="form-control" value="{{ pasajero.apellidos }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Pasaporte:</label>
+                                            <input type="text" name="pasaporte" class="form-control" value="{{ pasajero.pasaporte }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Nacionalidad:</label>
+                                            <input type="text" name="nacionalidad" class="form-control" value="{{ pasajero.nacionalidad or '' }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Fecha de Nacimiento:</label>
+                                            <input type="date" name="fecha_nacimiento" class="form-control" value="{{ pasajero.fecha_nacimiento or '' }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Correo Electrónico:</label>
+                                            <input type="email" name="correo" class="form-control" value="{{ pasajero.correo or '' }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Teléfono:</label>
+                                            <input type="tel" name="telefono" class="form-control" value="{{ pasajero.telefono or '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if pasajeros|length == 0 %}
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> No se encontraron pasajeros
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para agregar pasajero -->
+<div class="modal fade" id="agregarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Nuevo Pasajero</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('agregar_pasajero') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre:</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Apellidos:</label>
+                        <input type="text" name="apellidos" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pasaporte:</label>
+                        <input type="text" name="pasaporte" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nacionalidad:</label>
+                        <input type="text" name="nacionalidad" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Nacimiento:</label>
+                        <input type="date" name="fecha_nacimiento" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo Electrónico:</label>
+                        <input type="email" name="correo" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono:</label>
+                        <input type="tel" name="telefono" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
