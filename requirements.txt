@@ -1,7 +1,7 @@
 Flask==2.3.3
 mysql-connector-python==8.1.0
-Flask-Login==0.6.2
+Flask-Login>=0.6.3  # Versión que soporta Werkzeug 3.x
 gunicorn==20.1.0
-pandas>=2.1.0,<2.3.0  # Updated for Python 3.13 compatibility
+pandas>=2.2.0
 python-dotenv==1.0.0
-psycopg2-binary==2.9.9
+psycopg2-binary>=2.9.9
